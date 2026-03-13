@@ -1,17 +1,44 @@
 from pyrogram import Client, filters
-from config import UPLOAD_CHANNEL, INDEX_CHANNEL
+from database import cursor, conn
 
-@Client.on_message(filters.video & filters.chat(UPLOAD_CHANNEL))
-async def handle_video(client, message):
 
-    file_id = message.video.file_id
-    title = message.video.file_name
+@Client.on_message(filters.command("adduser"))
+async def add_user(client, message):
 
-    button = [[
-        ("Watch Video", f"https://t.me/{client.me.username}?start={file_id}")
-    ]]
+    try:
+        user_id = int(message.command[1])
+        client_id = message.from_user.id
 
-    await client.send_message(
-        INDEX_CHANNEL,
-        f"🎬 {title}\nClick below to watch.",
+        cursor.execute(
+            "INSERT INTO students (user_id, client_id) VALUES (?, ?)",
+            (user_id, client_id)
+        )
+        conn.commit()
+
+        await message.reply_text("✅ Student Added")
+
+    except:
+        await message.reply_text("Usage:\n/adduser user_id")
+
+
+@Client.on_message(filters.command("users"))
+async def list_users(client, message):
+
+    client_id = message.from_user.id
+
+    cursor.execute(
+        "SELECT user_id FROM students WHERE client_id=?",
+        (client_id,)
     )
+
+    data = cursor.fetchall()
+
+    if not data:
+        return await message.reply_text("No students found")
+
+    text = "👨‍🎓 Students List\n\n"
+
+    for x in data:
+        text += f"{x[0]}\n"
+
+    await message.reply_text(text)
