@@ -1,7 +1,12 @@
+
 from pyrogram import Client, filters
 from database import cursor, conn
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
+# -------------------------------
+# ADD STUDENT
+# -------------------------------
 @Client.on_message(filters.command("adduser"))
 async def add_user(client, message):
 
@@ -21,6 +26,9 @@ async def add_user(client, message):
         await message.reply_text("Usage:\n/adduser user_id")
 
 
+# -------------------------------
+# LIST STUDENTS
+# -------------------------------
 @Client.on_message(filters.command("users"))
 async def list_users(client, message):
 
@@ -42,3 +50,47 @@ async def list_users(client, message):
         text += f"{x[0]}\n"
 
     await message.reply_text(text)
+
+
+# -------------------------------
+# SAVE VIDEO FROM CHANNEL
+# -------------------------------
+@Client.on_message(filters.video & filters.channel)
+async def save_video(client, message):
+
+    file_id = message.video.file_id
+    client_id = message.chat.id
+
+    cursor.execute(
+        "INSERT INTO videos (file_id, client_id) VALUES (?, ?)",
+        (file_id, client_id)
+    )
+    conn.commit()
+
+
+# -------------------------------
+# WATCH VIDEO
+# -------------------------------
+@Client.on_message(filters.command("watch"))
+async def watch_video(client, message):
+
+    user_id = message.from_user.id
+
+    cursor.execute(
+        "SELECT * FROM students WHERE user_id=?",
+        (user_id,)
+    )
+
+    user = cursor.fetchone()
+
+    if not user:
+        return await message.reply_text("❌ You are not authorized")
+
+    cursor.execute("SELECT file_id FROM videos")
+    videos = cursor.fetchall()
+
+    if not videos:
+        return await message.reply_text("No videos available")
+
+    for v in videos:
+        await message.reply_video(v[0])
