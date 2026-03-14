@@ -1,7 +1,5 @@
-import asyncio
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from config import BOT_TOKEN, API_ID, API_HASH, UPLOAD_CHANNEL, INDEX_CHANNEL, LOG_CHANNEL, ADMIN_ID
+from config import BOT_TOKEN, API_ID, API_HASH, UPLOAD_CHANNEL, INDEX_CHANNEL, LOG_CHANNEL
 
 bot = Client(
     "video-protect-bot",
@@ -12,7 +10,7 @@ bot = Client(
 
 @bot.on_message(filters.command("start"))
 async def start(client, message):
-    await message.reply_text("👋 Bot Working!")
+    await message.reply_text("🤖 Bot Working!")
 
 @bot.on_message(filters.chat(UPLOAD_CHANNEL) & filters.video)
 async def upload_video(client, message):
@@ -34,10 +32,4 @@ async def upload_video(client, message):
 
 print("🚀 Bot Started")
 
-async def main():
-    await bot.start()
-    await idle()
-
-from pyrogram import idle
-
-asyncio.run(main())
+bot.run()
