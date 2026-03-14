@@ -63,7 +63,8 @@ async def watch_video(client, message):
 
         await message.reply_video(
             v[0],
-            caption="🎬 Lecture"
+            caption="🎬 Lecture",
+            protect_content=True
         )
 
         # Save analytics
