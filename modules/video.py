@@ -1,11 +1,17 @@
 from pyrogram import Client, filters
 from database import cursor, conn
+from config import UPLOAD_CHANNEL
+
 
 # -------------------------------
 # ADD STUDENT
 # -------------------------------
 @Client.on_message(filters.command("adduser"))
 async def add_user(client, message):
+
+    if len(message.command) < 2:
+        return await message.reply_text("Usage:\n/adduser user_id")
+
     try:
         user_id = int(message.command[1])
         client_id = message.from_user.id
@@ -14,12 +20,13 @@ async def add_user(client, message):
             "INSERT INTO students (user_id, client_id) VALUES (?, ?)",
             (user_id, client_id)
         )
+
         conn.commit()
 
         await message.reply_text("✅ Student Added")
 
-    except:
-        await message.reply_text("Usage:\n/adduser user_id")
+    except Exception as e:
+        await message.reply_text("❌ Failed to add student")
 
 
 # -------------------------------
@@ -49,9 +56,9 @@ async def list_users(client, message):
 
 
 # -------------------------------
-# SAVE VIDEO FROM CHANNEL
+# SAVE VIDEO FROM UPLOAD CHANNEL
 # -------------------------------
-@Client.on_message(filters.video & filters.channel)
+@Client.on_message(filters.video & filters.chat(int(UPLOAD_CHANNEL)))
 async def save_video(client, message):
 
     file_id = message.video.file_id
