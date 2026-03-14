@@ -4,7 +4,6 @@ import sqlite3
 conn = sqlite3.connect("bot.db", check_same_thread=False)
 cursor = conn.cursor()
 
-
 # -------------------------------
 # CLIENTS TABLE
 # -------------------------------
@@ -15,17 +14,16 @@ CREATE TABLE IF NOT EXISTS clients(
 )
 """)
 
-
 # -------------------------------
-# STUDENTS TABLE
+# STUDENTS TABLE (with expiry)
 # -------------------------------
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS students(
     user_id INTEGER PRIMARY KEY,
-    client_id INTEGER
+    client_id INTEGER,
+    expiry_date TEXT
 )
 """)
-
 
 # -------------------------------
 # VIDEOS TABLE
@@ -38,13 +36,11 @@ CREATE TABLE IF NOT EXISTS videos(
 )
 """)
 
-
 # Index for faster queries
 cursor.execute("""
 CREATE INDEX IF NOT EXISTS idx_client
 ON videos(client_id)
 """)
-
 
 # -------------------------------
 # ANALYTICS TABLE
@@ -58,5 +54,5 @@ CREATE TABLE IF NOT EXISTS analytics(
 )
 """)
 
-
+# Save changes
 conn.commit()
