@@ -1,15 +1,11 @@
-
 from pyrogram import Client, filters
 from database import cursor, conn
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-
 
 # -------------------------------
 # ADD STUDENT
 # -------------------------------
 @Client.on_message(filters.command("adduser"))
 async def add_user(client, message):
-
     try:
         user_id = int(message.command[1])
         client_id = message.from_user.id
@@ -44,7 +40,7 @@ async def list_users(client, message):
     if not data:
         return await message.reply_text("No students found")
 
-    text = "👨‍🎓 Students List\n\n"
+    text = "📚 Students List\n\n"
 
     for x in data:
         text += f"{x[0]}\n"
@@ -65,6 +61,7 @@ async def save_video(client, message):
         "INSERT INTO videos (file_id, client_id) VALUES (?, ?)",
         (file_id, client_id)
     )
+
     conn.commit()
 
 
@@ -76,6 +73,7 @@ async def watch_video(client, message):
 
     user_id = message.from_user.id
 
+    # Check student
     cursor.execute(
         "SELECT * FROM students WHERE user_id=?",
         (user_id,)
@@ -86,11 +84,27 @@ async def watch_video(client, message):
     if not user:
         return await message.reply_text("❌ You are not authorized")
 
-    cursor.execute("SELECT file_id FROM videos")
+    client_id = user[1]
+
+    # Get videos
+    cursor.execute(
+        "SELECT file_id FROM videos WHERE client_id=?",
+        (client_id,)
+    )
+
     videos = cursor.fetchall()
 
     if not videos:
         return await message.reply_text("No videos available")
 
     for v in videos:
+
         await message.reply_video(v[0])
+
+        # Save analytics
+        cursor.execute(
+            "INSERT INTO analytics (user_id, file_id) VALUES (?, ?)",
+            (user_id, v[0])
+        )
+
+        conn.commit()
