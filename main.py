@@ -1,4 +1,4 @@
-from pyrogram import Client, filters
+from pyrogram import Client, filters, idle
 from config import BOT_TOKEN, API_ID, API_HASH, UPLOAD_CHANNEL, INDEX_CHANNEL, LOG_CHANNEL
 
 bot = Client(
@@ -8,12 +8,10 @@ bot = Client(
     bot_token=BOT_TOKEN
 )
 
-# START COMMAND
 @bot.on_message(filters.command("start"))
 async def start(client, message):
-    await message.reply_text("🤖 Bot Working!")
+    await message.reply_text("✅ Bot Working!")
 
-# VIDEO UPLOAD HANDLER
 @bot.on_message(filters.chat(UPLOAD_CHANNEL) & filters.video)
 async def upload_video(client, message):
 
@@ -39,4 +37,6 @@ async def upload_video(client, message):
 
 print("🚀 Bot Started")
 
-bot.run()
+bot.start()
+idle()
+bot.stop()
