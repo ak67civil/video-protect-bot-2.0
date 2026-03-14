@@ -5,6 +5,7 @@ import modules.start
 import modules.admin
 import modules.video
 
+
 app = Client(
     "course_bot",
     bot_token=BOT_TOKEN,
@@ -12,6 +13,7 @@ app = Client(
     api_hash=API_HASH
 )
 
-print("Bot Started 🚀")
 
-app.run()
+if __name__ == "__main__":
+    print("🚀 Bot Started Successfully")
+    app.run()
