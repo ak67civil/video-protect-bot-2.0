@@ -1,0 +1,25 @@
+from pyrogram import Client, filters
+from database import cursor, conn
+from config import LOG_CHANNEL
+
+# SAVE VIDEO FROM CHANNEL
+
+@Client.on_message(filters.video & filters.channel)
+async def save_video(client, message):
+
+    file_id = message.video.file_id
+    channel_id = message.chat.id
+
+    try:
+        cursor.execute(
+            "INSERT INTO videos (file_id, client_id) VALUES (?, ?)",
+            (file_id, channel_id)
+        )
+        conn.commit()
+
+        # Forward to log channel
+        if LOG_CHANNEL:
+            await message.forward(LOG_CHANNEL)
+
+    except Exception as e:
+        print(e)
