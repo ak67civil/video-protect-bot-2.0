@@ -1,5 +1,6 @@
 from pyrogram import Client, filters
 from database import cursor, conn
+from datetime import datetime
 
 
 @Client.on_message(filters.command("start"))
@@ -7,9 +8,9 @@ async def start_cmd(client, message):
 
     user_id = message.from_user.id
 
-    # Check student
+    # Check user
     cursor.execute(
-        "SELECT * FROM students WHERE user_id=?",
+        "SELECT expiry_date FROM students WHERE user_id=?",
         (user_id,)
     )
 
@@ -20,7 +21,17 @@ async def start_cmd(client, message):
             "❌ You are not authorized to use this bot."
         )
 
-    # If start link contains video id
+    expiry_date = user[0]
+
+    # Expiry check
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    if expiry_date < today:
+        return await message.reply_text(
+            "⛔ Your subscription has expired."
+        )
+
+    # If deep link contains video id
     if len(message.command) > 1:
 
         file_id = message.command[1]
