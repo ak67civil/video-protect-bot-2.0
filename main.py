@@ -1,3 +1,19 @@
+from pyrogram import Client, filters
+from config import BOT_TOKEN, API_ID, API_HASH, UPLOAD_CHANNEL, INDEX_CHANNEL, LOG_CHANNEL
+
+bot = Client(
+    "video-protect-bot",
+    api_id=API_ID,
+    api_hash=API_HASH,
+    bot_token=BOT_TOKEN
+)
+
+# START COMMAND
+@bot.on_message(filters.command("start"))
+async def start(client, message):
+    await message.reply_text("🤖 Bot Working!")
+
+# VIDEO UPLOAD HANDLER
 @bot.on_message(filters.chat(UPLOAD_CHANNEL) & filters.video)
 async def upload_video(client, message):
 
@@ -20,3 +36,7 @@ async def upload_video(client, message):
     )
 
     print("✅ Video Indexed")
+
+print("🚀 Bot Started")
+
+bot.run()
