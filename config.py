@@ -1,12 +1,8 @@
-import os
+API_ID = 123456
+API_HASH = "your_api_hash"
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+BOT_TOKEN = "your_bot_token"
 
-API_ID = int(os.getenv("API_ID", 0))
-API_HASH = os.getenv("API_HASH")
-
-UPLOAD_CHANNEL = int(os.getenv("UPLOAD_CHANNEL", 0))
-INDEX_CHANNEL = int(os.getenv("INDEX_CHANNEL", 0))
-LOG_CHANNEL = int(os.getenv("LOG_CHANNEL", 0))
-
-ADMIN_ID = int(os.getenv("ADMIN_ID", 0))
+UPLOAD_CHANNEL = -100xxxxxxxxxx
+INDEX_CHANNEL = -100xxxxxxxxxx
+LOG_CHANNEL = -100xxxxxxxxxx
