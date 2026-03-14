@@ -1,12 +1,9 @@
 import sqlite3
 
-# CONNECT DATABASE
 conn = sqlite3.connect("bot.db", check_same_thread=False)
 cursor = conn.cursor()
 
-# -------------------------------
-# CLIENTS TABLE
-# -------------------------------
+# CLIENTS
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS clients(
     client_id INTEGER PRIMARY KEY,
@@ -14,19 +11,15 @@ CREATE TABLE IF NOT EXISTS clients(
 )
 """)
 
-# -------------------------------
-# STUDENTS TABLE
-# -------------------------------
+# STUDENTS
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS students(
-    user_id INTEGER,
+    user_id INTEGER PRIMARY KEY,
     client_id INTEGER
 )
 """)
 
-# -------------------------------
-# VIDEOS TABLE
-# -------------------------------
+# VIDEOS
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS videos(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,9 +28,11 @@ CREATE TABLE IF NOT EXISTS videos(
 )
 """)
 
-# -------------------------------
-# ANALYTICS TABLE
-# -------------------------------
+cursor.execute(
+    "CREATE INDEX IF NOT EXISTS idx_client ON videos(client_id)"
+)
+
+# ANALYTICS
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS analytics(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,5 +42,4 @@ CREATE TABLE IF NOT EXISTS analytics(
 )
 """)
 
-# SAVE CHANGES
 conn.commit()
