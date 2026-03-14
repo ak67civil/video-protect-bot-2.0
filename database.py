@@ -1,38 +1,51 @@
 import sqlite3
 
+# CONNECT DATABASE
 conn = sqlite3.connect("bot.db", check_same_thread=False)
 cursor = conn.cursor()
 
-# Clients table
+# -------------------------------
+# CLIENTS TABLE
+# -------------------------------
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS clients(
-client_id INTEGER PRIMARY KEY,
-channel_id INTEGER
+    client_id INTEGER PRIMARY KEY,
+    channel_id INTEGER
 )
 """)
 
-# Students table
+# -------------------------------
+# STUDENTS TABLE
+# -------------------------------
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS students(
-user_id INTEGER,
-client_id INTEGER
+    user_id INTEGER,
+    client_id INTEGER
 )
 """)
 
-# Videos table
+# -------------------------------
+# VIDEOS TABLE
+# -------------------------------
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS videos(
-file_id TEXT,
-client_id INTEGER
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    file_id TEXT,
+    client_id INTEGER
 )
 """)
 
-# Analytics table
+# -------------------------------
+# ANALYTICS TABLE
+# -------------------------------
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS analytics(
-user_id INTEGER,
-file_id TEXT
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    file_id TEXT,
+    watch_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
 """)
 
+# SAVE CHANGES
 conn.commit()
