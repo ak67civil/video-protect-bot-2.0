@@ -1,76 +1,93 @@
 from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from config import UPLOAD_CHANNEL, INDEX_CHANNEL, LOG_CHANNEL
 from database import cursor, conn
-from config import UPLOAD_CHANNEL
 from datetime import datetime
 
 
-# ---------------------------------
-# SAVE VIDEO FROM UPLOAD CHANNEL
-# ---------------------------------
+# -----------------------------
+# AUTO INDEX VIDEO
+# -----------------------------
 @Client.on_message(filters.video & filters.chat(int(UPLOAD_CHANNEL)))
-async def save_video(client, message):
+async def auto_index(client, message):
 
     file_id = message.video.file_id
-    client_id = message.chat.id
+
+    # Send to index channel
+    await client.send_video(
+        chat_id=int(INDEX_CHANNEL),
+        video=file_id,
+        caption="📚 New Lecture",
+        reply_markup=InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        "▶️ Watch Lecture",
+                        callback_data=f"watch_{file_id}"
+                    )
+                ]
+            ]
+        )
+    )
+
+    # Send copy to log channel
+    await client.send_video(
+        chat_id=int(LOG_CHANNEL),
+        video=file_id,
+        caption="📥 Video logged"
+    )
 
     cursor.execute(
-        "INSERT INTO videos (file_id, client_id) VALUES (?, ?)",
-        (file_id, client_id)
+        "INSERT INTO videos (file_id) VALUES (?)",
+        (file_id,)
     )
 
     conn.commit()
 
 
-# ---------------------------------
-# WATCH VIDEOS
-# ---------------------------------
-@Client.on_message(filters.command("watch"))
-async def watch_video(client, message):
+# -----------------------------
+# WATCH VIDEO
+# -----------------------------
+@Client.on_callback_query(filters.regex("watch_"))
+async def watch_video(client, callback):
 
-    user_id = message.from_user.id
+    user_id = callback.from_user.id
+    file_id = callback.data.split("_")[1]
 
-    # Check user
     cursor.execute(
-        "SELECT client_id, expiry_date FROM students WHERE user_id=?",
+        "SELECT expiry_date FROM students WHERE user_id=?",
         (user_id,)
     )
 
     user = cursor.fetchone()
 
     if not user:
-        return await message.reply_text("❌ You are not authorized.")
+        return await callback.answer(
+            "❌ You are not authorized",
+            show_alert=True
+        )
 
-    client_id = user[0]
-    expiry_date = user[1]
-
+    expiry = user[0]
     today = datetime.now().strftime("%Y-%m-%d")
 
-    if expiry_date < today:
-        return await message.reply_text("⛔ Your access has expired.")
+    if expiry < today:
+        return await callback.answer(
+            "⛔ Your access expired",
+            show_alert=True
+        )
 
-    # Get videos
-    cursor.execute(
-        "SELECT file_id FROM videos WHERE client_id=?",
-        (client_id,)
+    await client.send_video(
+        chat_id=user_id,
+        video=file_id,
+        caption="🎬 Lecture",
+        protect_content=True
     )
 
-    videos = cursor.fetchall()
-
-    if not videos:
-        return await message.reply_text("No lectures available yet.")
-
-    for v in videos:
-
-        await message.reply_video(
-            v[0],
-            caption="🎬 Lecture",
-            protect_content=True
-        )
-
-        # Save analytics
-        cursor.execute(
-            "INSERT INTO analytics (user_id, file_id) VALUES (?, ?)",
-            (user_id, v[0])
-        )
+    cursor.execute(
+        "INSERT INTO analytics (user_id, file_id) VALUES (?,?)",
+        (user_id, file_id)
+    )
 
     conn.commit()
+
+    await callback.answer("📥 Sending lecture...")
